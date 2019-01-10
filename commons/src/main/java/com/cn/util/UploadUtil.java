@@ -12,6 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * 文件上传工具类
@@ -21,11 +24,11 @@ public class UploadUtil {
     /**
      * 云基本信息
      */
-    private static String endpoint = "http://oss-cn-hongkong-internal.aliyuncs.com";
+    private static String endpoint = "https://oss-cn-hongkong-internal.aliyuncs.com";
     private static String accessKey = "LTAI6bpHNc1Fjfb7";
     private static String secretKey = "KBH0GfDdJAhTyMOZ3kCXqBmVtNmueb";
     private static String bucketName = "music-story";
-    private static String returnPath = "http://music-story.oss-cn-hongkong-internal.aliyuncs.com/";
+    private static String returnPath = "https://music-story.oss-cn-hongkong-internal.aliyuncs.com/";
 
     /**
      * 七牛云上传（由于七牛云取消了测试域名，所以用阿里云）
@@ -60,12 +63,22 @@ public class UploadUtil {
     public static String uploadFileByAli(MultipartFile file,String cloudDir) throws IOException {
         OSSClient ossClient = new OSSClient(endpoint, accessKey, secretKey);
         // 上传内容到指定的存储空间（bucketName）并保存为指定的文件名称（objectName）。
-        String fileKey = cloudDir+"/"+file.getName();
+        String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")).toLowerCase();
+        Random random = new Random();
+        String fileName = random.nextInt(10000) + System.currentTimeMillis() + suffix;
+        String fileKey = cloudDir+"/"+fileName;
         ossClient.putObject(bucketName, fileKey, new ByteArrayInputStream(file.getBytes()));
-        String url = returnPath+file.getName();
-        // 关闭OSSClient。
+
+        // 设置URL过期时间为10年 3600l* 1000*24*365*10
+        Date expiration = new Date(System.currentTimeMillis() + 3600L * 1000 * 24 * 365 * 10);
+        // 生成URL
+        URL url = ossClient.generatePresignedUrl(bucketName, fileKey, expiration);
+        // 关闭OSSClient
         ossClient.shutdown();
-        return url;
+        if (url != null) {
+            return url.toString();
+        }
+        return "";
     }
 
     /**
