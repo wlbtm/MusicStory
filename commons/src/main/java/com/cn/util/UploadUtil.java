@@ -28,7 +28,7 @@ public class UploadUtil {
     private static String accessKey = "LTAI6bpHNc1Fjfb7";
     private static String secretKey = "KBH0GfDdJAhTyMOZ3kCXqBmVtNmueb";
     private static String bucketName = "music-story";
-    private static String returnPath = "https://music-story.oss-cn-hongkong-internal.aliyuncs.com/";
+    private static String returnPath = "oss.ngcly.cn";
 
     /**
      * 七牛云上传（由于七牛云取消了测试域名，所以用阿里云）
@@ -76,7 +76,7 @@ public class UploadUtil {
         // 关闭OSSClient
         ossClient.shutdown();
         if (url != null) {
-            return url.toString();
+            return url.toString().replace("music-story.oss-cn-hongkong-internal.aliyuncs.com",returnPath);
         }
         return "";
     }
