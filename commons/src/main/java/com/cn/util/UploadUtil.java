@@ -90,7 +90,7 @@ public class UploadUtil {
         OSSClient ossClient = new OSSClient(endpoint, accessKey, secretKey);
         // 删除文件。
         String fileName = url.replace(returnPath,"");
-        ossClient.deleteObject(bucketName, fileName);
+        ossClient.deleteObject(bucketName, fileName.substring(fileName.lastIndexOf(":/"),fileName.indexOf("?")));
         // 关闭OSSClient。
         ossClient.shutdown();
     }
