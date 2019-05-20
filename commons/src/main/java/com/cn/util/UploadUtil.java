@@ -8,6 +8,7 @@ import com.qiniu.storage.Configuration;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -18,6 +19,7 @@ import java.util.Random;
 
 /**
  * 文件上传工具类
+ * @author ngcly
  */
 public class UploadUtil {
 
@@ -25,8 +27,10 @@ public class UploadUtil {
      * 云基本信息
      */
     private static String endpoint = "https://oss-cn-hongkong-internal.aliyuncs.com";
-    private static String accessKey = "LTAI6bpHNc1Fjfb7";
-    private static String secretKey = "KBH0GfDdJAhTyMOZ3kCXqBmVtNmueb";
+    @Value("${upload.accessKey}")
+    public static String accessKey;
+    @Value("${upload.secretKey}")
+    public static String secretKey;
     private static String bucketName = "music-story";
     private static String returnPath = "oss.ngcly.cn";
 
