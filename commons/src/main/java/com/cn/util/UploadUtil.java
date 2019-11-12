@@ -2,9 +2,9 @@ package com.cn.util;
 
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.OSSClient;
-import com.qiniu.common.Zone;
 import com.qiniu.http.Response;
 import com.qiniu.storage.Configuration;
+import com.qiniu.storage.Region;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.util.Auth;
@@ -55,7 +55,7 @@ public class UploadUtil {
      */
     public static String uploadFile(MultipartFile file) throws Exception {
         //构造一个带指定Zone对象的配置类 七牛上传
-        Configuration cfg = new Configuration(Zone.zone2());
+        Configuration cfg = new Configuration(Region.autoRegion());
         UploadManager uploadManager = new UploadManager(cfg);
         //默认不指定key的情况下，以文件内容的hash值作为文件名
         String key = null;
