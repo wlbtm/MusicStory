@@ -1,13 +1,7 @@
 package com.cn.util;
 
-import com.alibaba.fastjson.JSON;
-import com.aliyun.oss.OSSClient;
-import com.qiniu.http.Response;
-import com.qiniu.storage.Configuration;
-import com.qiniu.storage.Region;
-import com.qiniu.storage.UploadManager;
-import com.qiniu.storage.model.DefaultPutRet;
-import com.qiniu.util.Auth;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,46 +22,23 @@ public class UploadUtil {
     /**
      * 云基本信息
      */
-    private static String endpoint = "https://oss-cn-hongkong-internal.aliyuncs.com";
-    public static String accessKey;
-    public static String secretKey;
-    private static String bucketName = "music-story";
-    private static String returnPath = "oss.ngcly.cn";
+    private static final String endpoint = "https://oss-cn-hongkong-internal.aliyuncs.com";
+    public static String accessKeyId;
+    public static String accessKeySecret;
+    private static final String bucketName = "music-story";
+    private static final String returnPath = "oss.ngcly.cn";
 
     /**
      * 使用这种方法是因为@Value注入对static无效，注意需要 @Component
      */
     @Value("${upload.accessKey}")
     public void setAccessKey(String accessKey) {
-        UploadUtil.accessKey = accessKey;
+        UploadUtil.accessKeyId = accessKey;
     }
 
     @Value("${upload.secretKey}")
     public void setSecretKey(String secretKey) {
-        UploadUtil.secretKey = secretKey;
-    }
-
-    /**
-     * 七牛云上传（由于七牛云取消了测试域名，所以用阿里云）
-     * @param file
-     * @return
-     * @throws Exception
-     */
-    public static String uploadFile(MultipartFile file) throws Exception {
-        //构造一个带指定Zone对象的配置类 七牛上传
-        Configuration cfg = new Configuration(Region.autoRegion());
-        UploadManager uploadManager = new UploadManager(cfg);
-        //默认不指定key的情况下，以文件内容的hash值作为文件名
-        String key = null;
-        byte[] uploadBytes = file.getBytes();
-        Auth auth = Auth.create(accessKey, secretKey);
-        String upToken = auth.uploadToken(bucketName);
-
-        Response response = uploadManager.put(uploadBytes, key, upToken);
-        //解析上传成功的结果
-        DefaultPutRet putRet = JSON.toJavaObject(JSON.parseObject(response.bodyString()), DefaultPutRet.class);
-        returnPath+=putRet.hash;
-        return returnPath;
+        UploadUtil.accessKeySecret = secretKey;
     }
 
     /**
@@ -78,7 +49,7 @@ public class UploadUtil {
      * @throws IOException
      */
     public static String uploadFileByAli(MultipartFile file,String cloudDir) throws IOException {
-        OSSClient ossClient = new OSSClient(endpoint, accessKey, secretKey);
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
         // 上传内容到指定的存储空间（bucketName）并保存为指定的文件名称（objectName）。
         String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")).toLowerCase();
         Random random = new Random();
@@ -104,7 +75,7 @@ public class UploadUtil {
      */
     public static void deleteFileByAli(String url){
         // 创建OSSClient实例。
-        OSSClient ossClient = new OSSClient(endpoint, accessKey, secretKey);
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
         // 删除文件。
         String fileName = url.replace(returnPath,"");
         ossClient.deleteObject(bucketName, fileName.substring(fileName.lastIndexOf(":/"),fileName.indexOf("?")));
